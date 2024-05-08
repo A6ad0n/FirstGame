@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <iostream>
 
 class Game
 {
@@ -11,9 +12,14 @@ class Game
         sf::VideoMode videoMode;
         sf::Event event;
 
+        sf::Sprite enemy;
+        sf::Texture enemyTexture;
+
         //Functions
         void initVariables();
         void initWindow();
+        void initTextures();
+        void initEnemies();
 
     public:
         //Constructors and Destructors

@@ -9,12 +9,26 @@ void Game::initWindow()
 {
     this->videoMode = sf::VideoMode::getDesktopMode();
     this->window = new sf::RenderWindow(this->videoMode, "First Game", sf::Style::Default);
+    this->window->setFramerateLimit(144);
+}
+
+void Game::initTextures()
+{
+    this->enemyTexture.loadFromFile("sprites/craftpix-net-354073-free-emoji-icons-for-rpg-games/PNG/without background/1.png");
+}
+
+void Game::initEnemies()
+{
+    this->enemy.setPosition(sf::Vector2f(100.0f, 100.0f));
+    this->enemy.setTexture(this->enemyTexture);
 }
 
 Game::Game()
 {
     this->initVariables();
     this->initWindow();
+    this->initTextures();
+    this->initEnemies();
 }
 
 Game::~Game()
@@ -62,5 +76,8 @@ void Game::update()
 void Game::render()
 {
     this->window->clear(sf::Color::Cyan);
+
+    this->window->draw(this->enemy);
+
     this->window->display();
 }
