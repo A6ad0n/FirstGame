@@ -146,7 +146,10 @@ void Game::updateEnemies()
             deleted = true;
         
         if (deleted)
+        {
             this->enemies.erase(this->enemies.begin() + i);
+            deleted = false;
+        }
     }
 }
 
