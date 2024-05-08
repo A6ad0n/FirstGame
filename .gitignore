@@ -1,6 +1,5 @@
 obj
 garbage
-src
 *.o
 .DS_store
 .vscode
