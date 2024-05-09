@@ -20,3 +20,6 @@ $(PREF_OBJ)%.o : $(PREF_SRC)%.cpp
 open : $(TARGET)
 	./$(TARGET)
 	rm $(TARGET) $(PREF_OBJ)*.o
+
+clean :
+	rm $(PREF_OBJ)*.o

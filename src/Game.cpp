@@ -4,17 +4,17 @@ void Game::initVariables()
 {
     this->window = nullptr;
 
-    this->maxEnemies = 5;
-    this->enemySpawnerTimerMax = 100.f;
-    this->enemySpawnerTimer = this->enemySpawnerTimerMax;
+    this->enemySpawnerTimer = 0.f;
     this->points = 0;
     this->isMouseMoved = false;
+    this->frameCount = 0;
 
-    this->font.loadFromFile("fonts/Dudka Regular.ttf");
+    this->font.loadFromFile("resources/fonts/Dudka Regular.ttf");
 }
 
 void Game::initWindow()
 {
+    //this->videoMode = sf::VideoMode(400, 500);
     this->videoMode = sf::VideoMode::getDesktopMode();
     this->window = new sf::RenderWindow(this->videoMode, "First Game", sf::Style::Default);
     this->window->setFramerateLimit(144);
@@ -22,13 +22,11 @@ void Game::initWindow()
 
 void Game::initTextures()
 {
-    this->enemyTexture.loadFromFile("sprites/craftpix-net-354073-free-emoji-icons-for-rpg-games/PNG/without background/1.png");
 }
 
 void Game::initEnemies()
 {
-    this->enemy.setPosition(0.0f, 0.0f);
-    this->enemy.setTexture(this->enemyTexture);
+    this->enemy = nullptr;
 }
 
 void Game::initPointsText()
@@ -39,12 +37,18 @@ void Game::initPointsText()
     this->pointsText.setFillColor(sf::Color::Black);
 }
 
+void Game::initGettedPointsText()
+{
+    this->gettedPointsText->setFont(this->font);
+    this->gettedPointsText->setCharacterSize(50);
+    this->gettedPointsText->setFillColor(sf::Color::Red);
+}
+
 Game::Game()
 {
     this->initVariables();
     this->initWindow();
     this->initTextures();
-    this->initEnemies();
     this->initPointsText();
 }
 
@@ -60,13 +64,26 @@ bool Game::isRunning()
 
 void Game::spawnEnemy()
 {
-    this->enemy.setPosition(
-        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x - this->enemy.getGlobalBounds().getSize().x)),
-        0.f
-    );
-    this->enemy.setTexture(this->enemyTexture);
-    this->enemy.setScale(sf::Vector2f(0.5f, 0.5f));
+    this->enemy = new Enemy();
+    this->enemy->setPosition(sf::Vector2f(
+        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x)),
+        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x))
+    ));
+    this->enemy->setScale(sf::Vector2f(0.15f, 0.15f));
     this->enemies.push_back(this->enemy);
+}
+
+void Game::spawnGettedPointsText(const sf::Vector2f &position, const int &ID)
+{
+    this->gettedPointsText = new sf::Text();
+    this->initGettedPointsText();
+    this->gettedPointsText->setPosition(
+        position.x,
+        position.y
+    );
+    this->gettedPointsText->setString(std::to_string(ID));
+    this->gettedPointsTexts.push_back(this->gettedPointsText);
+
 }
 
 void Game::pollEvents()
@@ -115,13 +132,11 @@ void Game::updateMousePos()
     this->mousePosView = this->window->mapPixelToCoords(this->mousePosWindow);
 }
 
-
-
 void Game::updateEnemies()
 {
-    if (this->enemies.size() < this->maxEnemies)
+    if (this->enemies.size() < Consts::maxEnemies)
     {
-        if (this->enemySpawnerTimer >= this->enemySpawnerTimerMax)
+        if (this->enemySpawnerTimer >= Consts::enemySpawnerTimerMax)
         {
             this->spawnEnemy();
             this->enemySpawnerTimer = 0.f;
@@ -134,19 +149,24 @@ void Game::updateEnemies()
     bool deleted{};
     for (size_t i{}; i < enemies.size(); ++i)
     {
-        this->enemies[i].move(sf::Vector2f(0.f, 1.f));
+        this->enemies[i]->move();
 
-        if (this->isMouseMoved && this->enemies[i].getGlobalBounds().contains(this->mousePosView))
+        if (this->isMouseMoved && this->enemies[i]->contains(this->mousePosView))
         {
             deleted = true;
-            ++this->points;
+            this->points += enemies[i]->getID();
+            spawnGettedPointsText(mousePosView, enemies[i]->getID());
         }
 
-        if (this->enemies[i].getPosition().y > this->window->getSize().y)
+        if (this->enemies[i]->getPosition().y > this->window->getSize().y ||
+            this->enemies[i]->getPosition().y < - (this->enemies[i]->getSize().y) ||
+            this->enemies[i]->getPosition().x > this->window->getSize().x ||
+            this->enemies[i]->getPosition().x < - (this->enemies[i]->getSize().x))
             deleted = true;
         
         if (deleted)
         {
+            delete this->enemies[i];
             this->enemies.erase(this->enemies.begin() + i);
             deleted = false;
         }
@@ -155,7 +175,29 @@ void Game::updateEnemies()
 
 void Game::updatePointsText()
 {
-    this->pointsText.setString("Points: " + std::to_string(this->points));
+    this->pointsText.setString("Points: " + std::to_string(this->points) + 
+    "\nx: " + std::to_string(this->mousePosWindow.x) + 
+    " y: " + std::to_string(this->mousePosWindow.y) +
+    "\nx: " + std::to_string(static_cast<int>(this->mousePosView.x)) +
+    " y: " + std::to_string(static_cast<int>(this->mousePosView.y)) +
+    "\nFrame: " + std::to_string(this->frameCount / 60));
+}
+
+void Game::updateGettedPointsText()
+{
+    if (this->frameCount % 3 == 0)
+    {
+        for (size_t i{}; i < gettedPointsTexts.size(); ++i)
+        {
+            if (gettedPointsTexts[i]->getCharacterSize() < 5)
+            {
+                delete this->gettedPointsTexts[i];
+                this->gettedPointsTexts.erase(this->gettedPointsTexts.begin() + i);
+            }
+            else
+                gettedPointsTexts[i]->setCharacterSize(gettedPointsTexts[i]->getCharacterSize() * 0.95f);
+        }
+    }
 }
 
 void Game::update()
@@ -167,6 +209,14 @@ void Game::update()
     this->updateEnemies();
 
     this->updatePointsText();
+
+    this->updateGettedPointsText();
+}
+
+void Game::renderEnemies()
+{
+    for (auto &e : enemies)
+        this->window->draw(e->getSprite());
 }
 
 void Game::renderPointsText()
@@ -174,10 +224,10 @@ void Game::renderPointsText()
     this->window->draw(this->pointsText);
 }
 
-void Game::renderEnemies()
+void Game::renderGettedPointsText()
 {
-    for (auto &e : enemies)
-        this->window->draw(e);
+    for (auto t : gettedPointsTexts)
+        this->window->draw(*t);
 }
 
 void Game::render()
@@ -188,5 +238,9 @@ void Game::render()
 
     this->renderPointsText();
 
+    this->renderGettedPointsText();
+
     this->window->display();
+
+    ++this->frameCount;
 }

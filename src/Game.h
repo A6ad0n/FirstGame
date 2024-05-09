@@ -1,12 +1,8 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <iostream>
-#include <vector>
-#include <ctime>
+#include "Enemy.h"
 
-class Game
+class Game final
 {
     private:
         //Variables
@@ -15,24 +11,25 @@ class Game
         sf::VideoMode videoMode;
         sf::Event event;
         
+        std::vector<sf::Text*> gettedPointsTexts;
+        sf::Text* gettedPointsText;
+
         sf::Text pointsText;
         sf::Font font;
 
         //Game logic
         int points;
         float enemySpawnerTimer;
-        float enemySpawnerTimerMax;
-        size_t maxEnemies;
         bool isMouseMoved;
+        int frameCount;
 
         //Mouse position
         sf::Vector2i mousePosWindow;
         sf::Vector2f mousePosView;
 
         //Game objects
-        std::vector<sf::Sprite> enemies;
-        sf::Sprite enemy;
-        sf::Texture enemyTexture;
+        std::vector<Enemy*> enemies;
+        Enemy* enemy;
 
         //Functions
         void initVariables();
@@ -40,25 +37,29 @@ class Game
         void initTextures();
         void initEnemies();
         void initPointsText();
+        void initGettedPointsText();
 
     public:
         //Constructors and Destructors
         Game();
-        virtual ~Game();
+        ~Game();
 
         //Acessors
         bool isRunning();
 
         //Functions
         void spawnEnemy();
+        void spawnGettedPointsText(const sf::Vector2f &position, const int &ID);
         void pollEvents();
 
         void updateMousePos();
-        void updatePointsText();
         void updateEnemies();
+        void updatePointsText();
+        void updateGettedPointsText();
         void update();
 
-        void renderPointsText();
         void renderEnemies();
+        void renderPointsText();
+        void renderGettedPointsText();
         void render();
 };
