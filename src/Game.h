@@ -12,15 +12,20 @@ class Game final
         sf::Event event;
         
         std::vector<sf::Text*> gettedPointsTexts;
-        sf::Text* gettedPointsText;
+        sf::Text* Text;
 
         sf::Text pointsText;
         sf::Font font;
 
         //Game logic
         int points;
+        int strength;
+        int costStrength;
         float enemySpawnerTimer;
+        
         bool isMouseMoved;
+        bool mouseButtonPressed;
+        bool isDebug;
         int frameCount;
 
         //Mouse position
@@ -37,7 +42,7 @@ class Game final
         void initTextures();
         void initEnemies();
         void initPointsText();
-        void initGettedPointsText();
+        void initText();
 
     public:
         //Constructors and Destructors
@@ -49,17 +54,18 @@ class Game final
 
         //Functions
         void spawnEnemy();
-        void spawnGettedPointsText(const sf::Vector2f &position, const int &ID);
+        void spawnText(const sf::Vector2f &position, const std::string &text);
+        void spawnUpgradeText();
         void pollEvents();
 
         void updateMousePos();
         void updateEnemies();
         void updatePointsText();
-        void updateGettedPointsText();
+        void updateText();
         void update();
 
         void renderEnemies();
         void renderPointsText();
-        void renderGettedPointsText();
+        void renderText();
         void render();
 };

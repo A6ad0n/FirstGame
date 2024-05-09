@@ -11,15 +11,19 @@ class Enemy
         sf::Texture enemyTexture;
 
         sf::Vector2f speed;
+        sf::Vector2f scale;
 
         int cost;
 
         //Functions
-        void initID();
-        void initTextures();
+        virtual void initID();
+        virtual void initTextures();
+        virtual void initSpeed();
+        virtual void initScale();
+        virtual void initCost();
+
         void initVariables();
-        void initSpeed(const int a, const int b);
-        
+        void initSpeed(const int &a, const int &b);
 
     protected:
 
@@ -36,9 +40,14 @@ class Enemy
         int getID();
         sf::Vector2f getSize();
         sf::Vector2f getPosition();
-        sf::Sprite getSprite();
 
         //Functions
+        void spawn(const sf::VideoMode &videomode);
+        void spawn(const float &x, const float &y);
+        void spawn(const sf::Vector2f &position);
         void move();
         bool contains(const sf::Vector2f &point);
+        bool inTargetWindow(sf::RenderTarget* target);
+
+        void render(sf::RenderTarget* target);
 };

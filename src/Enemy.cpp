@@ -17,11 +17,14 @@ void Enemy::initVariables()
     //enemy
     this->enemy.setPosition(0.0f, 0.0f);
     this->enemy.setTexture(this->enemyTexture);
-
-    this->cost = this->ID;
 }
 
-void Enemy::initSpeed(const int a, const int b)
+void Enemy::initSpeed()
+{
+    this->initSpeed(-3,3);
+}
+
+void Enemy::initSpeed(const int &a, const int &b)
 {
     int range;
     if ((b < 0 && a > 0) || (b > 0 && a < 0) ||
@@ -39,12 +42,24 @@ void Enemy::initSpeed(const int a, const int b)
     } while (this->speed.x == 0.0f || this->speed.y == 0.0f);
 }
 
+void Enemy::initScale()
+{
+    this->scale = sf::Vector2f(0.15f, 0.15f);
+}
+
+void Enemy::initCost()
+{
+    this->cost = this->ID;
+}
+
 Enemy::Enemy()
 {
     initID();
     initTextures();
     initVariables();
-    initSpeed(-3,3);
+    initSpeed();
+    initScale();
+    initCost();
 }
 
 Enemy::~Enemy()
@@ -83,9 +98,25 @@ sf::Vector2f Enemy::getPosition()
     return this->enemy.getPosition();
 }
 
-sf::Sprite Enemy::getSprite()
+void Enemy::spawn(const sf::VideoMode &videomode)
 {
-    return this->enemy;
+    this->enemy.setPosition(sf::Vector2f(
+        static_cast<float>(rand() % static_cast<int>(videomode.width)),
+        static_cast<float>(rand() % static_cast<int>(videomode.height))
+    ));
+    this->enemy.setScale(this->scale);
+}
+
+void Enemy::spawn(const float &x, const float &y)
+{
+    this->enemy.setPosition(x, y);
+    this->enemy.setScale(this->scale);
+}
+
+void Enemy::spawn(const sf::Vector2f &position)
+{
+    this->enemy.setPosition(position.x, position.y);
+    this->enemy.setScale(this->scale);
 }
 
 void Enemy::move()
@@ -102,4 +133,17 @@ bool Enemy::contains(const sf::Vector2f &point)
         point.x,
         point.y
     );
+}
+
+bool Enemy::inTargetWindow(sf::RenderTarget* target)
+{
+    return  this->enemy.getPosition().y > target->getSize().y ||
+            this->enemy.getPosition().y < - (this->enemy.getGlobalBounds().getSize().y) ||
+            this->enemy.getPosition().x > target->getSize().x ||
+            this->enemy.getPosition().x < - (this->enemy.getGlobalBounds().getSize().x);
+}
+
+void Enemy::render(sf::RenderTarget* target)
+{
+    target->draw(this->enemy);
 }

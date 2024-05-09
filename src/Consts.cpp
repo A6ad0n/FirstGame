@@ -2,6 +2,6 @@
 
 namespace Consts
 {
-    const size_t maxEnemies = 1000;
+    const size_t maxEnemies = 100;
     const float enemySpawnerTimerMax = 1.f;
 }

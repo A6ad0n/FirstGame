@@ -4,10 +4,13 @@ void Game::initVariables()
 {
     this->window = nullptr;
 
-
-    this->enemySpawnerTimer = 0.f;
+    this->enemySpawnerTimer = 0;
     this->points = 0;
+    this->strength = 1;
+    this->costStrength = 500;
     this->isMouseMoved = false;
+    this->mouseButtonPressed = false;
+    this->isDebug = false;
     this->frameCount = 0;
 
     this->font.loadFromFile("resources/fonts/Dudka Regular.ttf");
@@ -37,11 +40,11 @@ void Game::initPointsText()
     this->pointsText.setFillColor(sf::Color::Black);
 }
 
-void Game::initGettedPointsText()
+void Game::initText()
 {
-    this->gettedPointsText->setFont(this->font);
-    this->gettedPointsText->setCharacterSize(50);
-    this->gettedPointsText->setFillColor(sf::Color::Red);
+    this->Text->setFont(this->font);
+    this->Text->setCharacterSize(100);
+    this->Text->setFillColor(sf::Color::Red);
 }
 
 Game::Game()
@@ -65,24 +68,32 @@ bool Game::isRunning()
 void Game::spawnEnemy()
 {
     this->enemy = new Enemy();
-    this->enemy->setPosition(sf::Vector2f(
-        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x)),
-        static_cast<float>(rand() % static_cast<int>(this->window->getSize().x))
-    ));
-    this->enemy->setScale(sf::Vector2f(0.15f, 0.15f));
+    this->enemy->spawn(this->mousePosView + sf::Vector2f(10.f, 10.f));
     this->enemies.push_back(this->enemy);
 }
 
-void Game::spawnGettedPointsText(const sf::Vector2f &position, const int &ID)
+void Game::spawnText(const sf::Vector2f &position, const std::string &text)
 {
-    this->gettedPointsText = new sf::Text();
-    this->initGettedPointsText();
-    this->gettedPointsText->setPosition(
+    this->Text = new sf::Text();
+    this->initText();
+    this->Text->setPosition(
         position.x,
         position.y
     );
-    this->gettedPointsText->setString(std::to_string(ID));
-    this->gettedPointsTexts.push_back(this->gettedPointsText);
+    this->Text->setString(text);
+
+    sf::FloatRect textBounds = this->Text->getLocalBounds();
+    this->Text->setOrigin(textBounds.left + textBounds.width / 2.0f, textBounds.top + textBounds.height / 2.0f);
+
+    this->gettedPointsTexts.push_back(this->Text);
+}
+
+void Game::spawnUpgradeText()
+{
+    int x = this->videoMode.width / 4;
+    int y = this->videoMode.height / 4;
+    std::string UpgradeText = "Upgrade!";
+    spawnText(sf::Vector2f(x, y), UpgradeText);
 }
 
 void Game::pollEvents()
@@ -101,7 +112,19 @@ void Game::pollEvents()
                     case sf::Keyboard::Escape:
                         this->window->close();
                         break;
-
+                    
+                    case sf::Keyboard::Up:
+                        if (this->points <= this->costStrength)
+                        {
+                            this->strength += 1;
+                            this->points -= this->costStrength;
+                            this->costStrength *= 3;
+                            this->spawnUpgradeText();
+                        }
+                        break;
+                    
+                    case sf::Keyboard::Enter:
+                        this->isDebug = !this->isDebug;
                     default:
                         break;
                 }
@@ -118,6 +141,14 @@ void Game::pollEvents()
 
                 break;
             }
+
+            case sf::Event::MouseButtonPressed:
+                this->mouseButtonPressed = true;
+                break;
+            
+            case sf::Event::MouseButtonReleased:
+                this->mouseButtonPressed = false;
+                break;
             
             default:
                 break;
@@ -133,11 +164,12 @@ void Game::updateMousePos()
 
 void Game::updateEnemies()
 {
-    if (this->enemies.size() < Consts::maxEnemies)
+    if (mouseButtonPressed && this->enemies.size() < Consts::maxEnemies)
     {
         if (this->enemySpawnerTimer >= Consts::enemySpawnerTimerMax)
         {
             this->spawnEnemy();
+            this->mouseButtonPressed = false;
             this->enemySpawnerTimer = 0.f;
         }
         else
@@ -146,21 +178,18 @@ void Game::updateEnemies()
 
     //move
     bool deleted{};
-    for (size_t i{}; i < enemies.size(); ++i)
+    for (size_t i{}; i < this->enemies.size() && deleted == false; ++i)
     {
         this->enemies[i]->move();
 
         if (this->isMouseMoved && this->enemies[i]->contains(this->mousePosView))
         {
             deleted = true;
-            this->points += enemies[i]->getID();
-            spawnGettedPointsText(mousePosView, enemies[i]->getID());
+            this->points += enemies[i]->getID() * this->strength;
+            this->spawnText(mousePosView, std::to_string(enemies[i]->getID() * this->strength));
         }
 
-        if (this->enemies[i]->getPosition().y > this->window->getSize().y ||
-            this->enemies[i]->getPosition().y < - (this->enemies[i]->getSize().y) ||
-            this->enemies[i]->getPosition().x > this->window->getSize().x ||
-            this->enemies[i]->getPosition().x < - (this->enemies[i]->getSize().x))
+        if (enemies[i]->inTargetWindow(this->window))
             deleted = true;
         
         if (deleted)
@@ -174,15 +203,20 @@ void Game::updateEnemies()
 
 void Game::updatePointsText()
 {
-    this->pointsText.setString("Points: " + std::to_string(this->points) + 
-    "\nx: " + std::to_string(this->mousePosWindow.x) + 
+    std::string output = "Points: " + std::to_string(this->points) + 
+    "\nStrength: " + std::to_string(this->strength) +
+    "\nUpgrade strength costs: " + std::to_string(this->costStrength);
+    if (this->isDebug)
+        output += "\nx: " + std::to_string(this->mousePosWindow.x) + 
     " y: " + std::to_string(this->mousePosWindow.y) +
     "\nx: " + std::to_string(static_cast<int>(this->mousePosView.x)) +
     " y: " + std::to_string(static_cast<int>(this->mousePosView.y)) +
-    "\nFrame: " + std::to_string(this->frameCount / 60));
+    "\nFrame: " + std::to_string(this->frameCount / 60);
+
+    this->pointsText.setString(output);
 }
 
-void Game::updateGettedPointsText()
+void Game::updateText()
 {
     if (this->frameCount % 3 == 0)
     {
@@ -209,13 +243,13 @@ void Game::update()
 
     this->updatePointsText();
 
-    this->updateGettedPointsText();
+    this->updateText();
 }
 
 void Game::renderEnemies()
 {
     for (auto &e : enemies)
-        this->window->draw(e->getSprite());
+        e->render(this->window);
 }
 
 void Game::renderPointsText()
@@ -223,7 +257,7 @@ void Game::renderPointsText()
     this->window->draw(this->pointsText);
 }
 
-void Game::renderGettedPointsText()
+void Game::renderText()
 {
     for (auto t : gettedPointsTexts)
         this->window->draw(*t);
@@ -237,7 +271,7 @@ void Game::render()
 
     this->renderPointsText();
 
-    this->renderGettedPointsText();
+    this->renderText();
 
     this->window->display();
 
