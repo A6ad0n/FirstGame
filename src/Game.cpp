@@ -4,6 +4,7 @@ void Game::initVariables()
 {
     this->window = nullptr;
 
+
     this->enemySpawnerTimer = 0.f;
     this->points = 0;
     this->isMouseMoved = false;
@@ -14,7 +15,6 @@ void Game::initVariables()
 
 void Game::initWindow()
 {
-    //this->videoMode = sf::VideoMode(400, 500);
     this->videoMode = sf::VideoMode::getDesktopMode();
     this->window = new sf::RenderWindow(this->videoMode, "First Game", sf::Style::Default);
     this->window->setFramerateLimit(144);
@@ -83,7 +83,6 @@ void Game::spawnGettedPointsText(const sf::Vector2f &position, const int &ID)
     );
     this->gettedPointsText->setString(std::to_string(ID));
     this->gettedPointsTexts.push_back(this->gettedPointsText);
-
 }
 
 void Game::pollEvents()
