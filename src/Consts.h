@@ -9,6 +9,6 @@
 
 namespace Consts
 {
-    extern const size_t maxEnemies;
-    extern const float enemySpawnerTimerMax;
+    constexpr size_t maxEnemies = 100;
+    constexpr unsigned int enemySpawnerTimerMax = 1;
 }

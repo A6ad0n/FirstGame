@@ -6,20 +6,13 @@ SFML_INCLUDE = -I./dependecies/include/
 SFML_LIB = -L./dependecies/lib/ -lsfml-graphics -lsfml-window -lsfml-system
 
 PREF_SRC = ./src/
-PREF_OBJ = ./obj/
 
-SRC = $(wildcard $(PREF_SRC)*.cpp)
-OBJ = $(patsubst $(PREF_SRC)%.cpp, $(PREF_OBJ)%.o, $(SRC))
-
-$(TARGET) : $(OBJ)
-	$(CC) $(CCFLAGS) $(SFML_INCLUDE) -o $(TARGET) $(OBJ) $(SFML_LIB)
-
-$(PREF_OBJ)%.o : $(PREF_SRC)%.cpp
-	$(CC) $(CCFLAGS) $(SFML_INCLUDE) -c $< -o $@
+$(TARGET) :
+	$(CC) -o $(TARGET) $(PREF_SRC)*.cpp $(CCFLAGS) $(SFML_INCLUDE) $(SFML_LIB)
 
 open : $(TARGET)
 	./$(TARGET)
-	rm $(TARGET) $(PREF_OBJ)*.o
+	rm $(TARGET)
 
-clean :
-	rm $(PREF_OBJ)*.o
+clean : $(TARGET)
+	rm $(TARGET);

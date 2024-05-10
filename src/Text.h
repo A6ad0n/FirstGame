@@ -2,23 +2,25 @@
 
 #include "Consts.h"
 
-class Text
+class Text final
 {
-    private:
-        sf::Text text;
-        sf::Vector2f position;
-        sf::Font font;
-        unsigned int characterSize;
-        sf::Color color;
+public:
+    //Contsructors and Destructors
+    Text();
+    Text(const sf::Font &font, const unsigned int &ID, const unsigned int &characterSize, const sf::Color &color);
+    ~Text();
 
-        void initText();
-    public:
-        Text(const sf::Font &font, const unsigned int &characterSize, const sf::Color &color);
-        ~Text();
+    void spawn(const sf::Vector2f &position, const std::string &message);
 
-        void setPosition(const sf::Vector2f &position);
+    void update(const std::vector<int*> &info);
+    void render(sf::RenderTarget* target) const;
 
-        void spawnText();
-        void updateText();
-        void renderText();
+private:
+    std::vector<sf::Text*> texts;
+    sf::Text* text;
+
+    sf::Font font;
+    unsigned int ID;
+    unsigned int characterSize;
+    sf::Color color;
 };

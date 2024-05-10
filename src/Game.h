@@ -1,71 +1,52 @@
 #pragma once
 
 #include "Enemy.h"
+#include "Text.h"
 
 class Game final
 {
-    private:
-        //Variables
-        //Window
-        sf::RenderWindow* window;
-        sf::VideoMode videoMode;
-        sf::Event event;
-        
-        std::vector<sf::Text*> gettedPointsTexts;
-        sf::Text* Text;
+public:
+    //Constructors and Destructors
+    Game();
+    ~Game();
 
-        sf::Text pointsText;
-        sf::Font font;
+    //Acessors
+    bool isRunning() const;
 
-        //Game logic
-        int points;
-        int strength;
-        int costStrength;
-        float enemySpawnerTimer;
-        
-        bool isMouseMoved;
-        bool mouseButtonPressed;
-        bool isDebug;
-        int frameCount;
+    //Functions
+    void spawnEnemy();
+    void update();
+    void render();
+private:
+    //Window
+    sf::RenderWindow* window;
+    sf::VideoMode videoMode;
+    
+    std::vector<Text*> texts;
+    std::vector<int*> info;
 
-        //Mouse position
-        sf::Vector2i mousePosWindow;
-        sf::Vector2f mousePosView;
+    //Game logic
+    unsigned int enemySpawnerTimer;
+    int points;
+    int strength;
+    int costStrength;
 
-        //Game objects
-        std::vector<Enemy*> enemies;
-        Enemy* enemy;
+    //Game info
+    bool isMouseMoved;
+    bool mouseButtonPressed;
+    bool isDebug;
+    int frameCount;
 
-        //Functions
-        void initVariables();
-        void initWindow();
-        void initTextures();
-        void initEnemies();
-        void initPointsText();
-        void initText();
+    //Mouse position
+    sf::Vector2i mousePosWindow;
+    sf::Vector2f mousePosView;
 
-    public:
-        //Constructors and Destructors
-        Game();
-        ~Game();
+    //Game objects
+    std::vector<Enemy*> enemies;
 
-        //Acessors
-        bool isRunning();
-
-        //Functions
-        void spawnEnemy();
-        void spawnText(const sf::Vector2f &position, const std::string &text);
-        void spawnUpgradeText();
-        void pollEvents();
-
-        void updateMousePos();
-        void updateEnemies();
-        void updatePointsText();
-        void updateText();
-        void update();
-
-        void renderEnemies();
-        void renderPointsText();
-        void renderText();
-        void render();
+    //Functions
+    void initVariables();
+    void initWindow();
+    void initText();
+    void initGUIText();
 };
