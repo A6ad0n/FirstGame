@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Consts.h"
+#include "GameInfo.h"
 
 class Text final
 {
@@ -12,7 +13,7 @@ public:
 
     void spawn(const sf::Vector2f &position, const std::string &message);
 
-    void update(const std::vector<int*> &info);
+    void update(const GameInfo &info);
     void render(sf::RenderTarget* target) const;
 
 private:

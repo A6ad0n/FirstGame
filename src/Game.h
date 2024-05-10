@@ -14,7 +14,6 @@ public:
     bool isRunning() const;
 
     //Functions
-    void spawnEnemy();
     void update();
     void render();
 private:
@@ -23,19 +22,8 @@ private:
     sf::VideoMode videoMode;
     
     std::vector<Text*> texts;
-    std::vector<int*> info;
 
-    //Game logic
-    unsigned int enemySpawnerTimer;
-    int points;
-    int strength;
-    int costStrength;
-
-    //Game info
-    bool isMouseMoved;
-    bool mouseButtonPressed;
-    bool isDebug;
-    int frameCount;
+    GameInfo info;
 
     //Mouse position
     sf::Vector2i mousePosWindow;
