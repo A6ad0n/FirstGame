@@ -4,19 +4,14 @@ void Game::initVariables()
 {
     window = nullptr;
 
-    enemySpawnerTimer = 0;
-    points = 0;
-    strength = 1;
-    costStrength = 500;
-    isMouseMoved = false;
-    mouseButtonPressed = false;
-    isDebug = false;
-    frameCount = 0;
-
-    info.push_back(&frameCount);
-    info.push_back(&points);
-    info.push_back(&strength);
-    info.push_back(&costStrength);
+    info.enemySpawnerTimer = 0;
+    info.points = 0;
+    info.strength = 1;
+    info.costStrength = 500;
+    info.isMouseMoved = false;
+    info.mouseButtonPressed = false;
+    info.isDebug = false;
+    info.frameCount = 0;
 }
 
 void Game::initWindow()
@@ -31,13 +26,13 @@ void Game::initText()
     sf::Font font;
     font.loadFromFile("resources/fonts/Dudka Regular.ttf");
     texts.push_back(new Text(
-        font, 0, 40, sf::Color::Magenta
+        font, 0, 40, sf::Color::Magenta //GUI text
     ));
     texts.push_back(new Text(
-        font, 1, 50, sf::Color::Red
+        font, 1, 50, sf::Color::Red     //Getted points text
     ));
     texts.push_back(new Text(
-        font, 2, 200, sf::Color::Black
+        font, 2, 200, sf::Color::Black  //Upgrade text
     ));
 }
 
@@ -67,14 +62,6 @@ bool Game::isRunning() const
     return window->isOpen();
 }
 
-void Game::spawnEnemy()
-{
-    Enemy* enemy = new Enemy();
-    sf::Vector2f offset(10.f, 10.f);
-    enemy->spawn(mousePosView + offset);
-    enemies.push_back(enemy);
-}
-
 void Game::update()
 {
     //Poll Event
@@ -84,6 +71,7 @@ void Game::update()
         {
             switch (event.type)
             {
+                //Exit game
                 case sf::Event::Closed:
                     window->close();
                     break;
@@ -91,23 +79,24 @@ void Game::update()
                 case sf::Event::KeyPressed:
                     switch (event.key.code)
                     {
+                        //Exit game
                         case sf::Keyboard::Escape:
                             window->close();
                             break;
-                        
+                        //Ugrade strength
                         case sf::Keyboard::Up:
-                            if (points >= costStrength)
+                            if (info.points >= info.costStrength)
                             {
-                                strength += 1;
-                                points -= costStrength;
-                                costStrength *= 3;
+                                info.strength += 1;
+                                info.points -= info.costStrength;
+                                info.costStrength *= 3;
                                 sf::Vector2f offset(250.f, 250.f);
                                 texts[2]->spawn(window->getView().getCenter() - offset, "Upgrade!");
                             }
                             break;
-                        
+                        //Debug mode switch
                         case sf::Keyboard::Enter:
-                            isDebug = !isDebug;
+                            info.isDebug = !info.isDebug;
                         default:
                             break;
                     }
@@ -118,19 +107,19 @@ void Game::update()
                     sf::Vector2i currentMousePosition = sf::Mouse::getPosition(*window);
 
                     if (currentMousePosition != prevMousePosition)
-                        isMouseMoved = true;
+                        info.isMouseMoved = true;
                     else
-                        isMouseMoved = false;
+                        info.isMouseMoved = false;
 
                     break;
                 }
 
                 case sf::Event::MouseButtonPressed:
-                    mouseButtonPressed = true;
+                    info.mouseButtonPressed = true;
                     break;
                 
                 case sf::Event::MouseButtonReleased:
-                    mouseButtonPressed = false;
+                    info.mouseButtonPressed = false;
                     break;
                 
                 default:
@@ -147,42 +136,46 @@ void Game::update()
 
     //Update enemies
     {
-        if (mouseButtonPressed && enemies.size() < Consts::maxEnemies)
+        if (info.mouseButtonPressed && enemies.size() < Consts::maxEnemies)
         {
-            if (enemySpawnerTimer >= Consts::enemySpawnerTimerMax)
-            {
-                spawnEnemy();
-                mouseButtonPressed = false;
-                enemySpawnerTimer = 0;
-            }
-            else
-            {
-                enemySpawnerTimer += 1;
-            }
+            //Spawn enemy
+            Enemy* enemy = new Enemy();
+            sf::Vector2f offset(10.f, 10.f);
+            enemy->spawn(mousePosView + offset);
+            enemies.push_back(enemy);
+            //Prevent mouse holding
+            info.mouseButtonPressed = false;
         }
 
-        //move
+        //Delete enemies
         bool deleted{};
         for (size_t i{}; i < enemies.size() && deleted == false; ++i)
         {
             enemies[i]->move();
 
-            if (isMouseMoved && enemies[i]->contains(mousePosView))
+            //Delete enemy if we kill it
+            if (info.isMouseMoved && enemies[i]->contains(mousePosView))
             {
+                //Add points
+                int gettedPoints = enemies[i]->getID() * info.strength;
+                info.points += gettedPoints;
+                //Spawn getted points text
+                texts[1]->spawn(mousePosView, std::to_string(gettedPoints));
+
                 deleted = true;
-                points += enemies[i]->getID() * strength;
-                texts[1]->spawn(mousePosView, std::to_string(enemies[i]->getID() * strength));
             }
 
-            if (enemies[i]->inTargetWindow(window))
+            //Delete enemy if not in window
+            if (!enemies[i]->inTargetWindow(window))
                 deleted = true;
             
+            //Delete enemy
             if (deleted)
-            {
-                delete enemies[i];
-                enemies.erase(enemies.begin() + i);
-                deleted = false;
-            }
+                {
+                    delete enemies[i];
+                    enemies.erase(enemies.begin() + i);
+                    deleted = false;
+                }
         }
     }
 
@@ -211,5 +204,5 @@ void Game::render()
 
     window->display();
 
-    ++frameCount;
+    ++info.frameCount;
 }

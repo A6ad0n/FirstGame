@@ -26,7 +26,7 @@ void Text::spawn(const sf::Vector2f &position, const std::string &message)
     texts.push_back(text);
 }
 
-void Text::update(const std::vector<int*> &info)
+void Text::update(const GameInfo &info)
 {
     for (size_t i{}; i < texts.size(); ++i)
     {
@@ -34,14 +34,18 @@ void Text::update(const std::vector<int*> &info)
         {
         case 0: //GUI text
         {
-            text->setString("Points: " + std::to_string(*info[1]) + 
-            "\nStrength: " + std::to_string(*info[2]) +
-            "\nUpgrade strength costs: " + std::to_string(*info[3]));
+            std::string out = "Points: " + std::to_string(info.points) + 
+            "\nStrength: " + std::to_string(info.strength) +
+            "\nUpgrade strength costs: " + std::to_string(info.costStrength) +
+            "\nTo upgrade press UP";
+            if (info.isDebug)
+                out += "\nFrameCount: " + std::to_string(info.frameCount);
+            texts[i]->setString(out);
             break;
         }
         case 1: //Getted points text
         {
-            if (*info[0] % 3 == 0)
+            if (info.frameCount % 3 == 0)
             {
                 if (texts[i]->getCharacterSize() < 5)
                 {
@@ -55,7 +59,7 @@ void Text::update(const std::vector<int*> &info)
         }
         case 2: //Upgrade text
         {
-            if (*info[0] % 5 == 0)
+            if (info.frameCount % 5 == 0)
             {
                 if (texts[i]->getCharacterSize() < 20)
                 {
