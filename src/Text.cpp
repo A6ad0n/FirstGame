@@ -21,8 +21,10 @@ void Text::spawn(const sf::Vector2f &position, const std::string &message)
     text->setCharacterSize(characterSize);
     text->setFont(font);
     text->setFillColor(color);
-    text->setPosition(position.x, position.y);
     text->setString(message);
+    sf::FloatRect bounds = text->getLocalBounds();
+    text->setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+    text->setPosition(position.x, position.y);
     texts.push_back(text);
 }
 
@@ -36,10 +38,17 @@ void Text::update(const GameInfo &info)
         {
             std::string out = "Points: " + std::to_string(info.points) + 
             "\nStrength: " + std::to_string(info.strength) +
+            "\nEfficiency: " + std::to_string(info.efficiency) +
             "\nUpgrade strength costs: " + std::to_string(info.costStrength) +
-            "\nTo upgrade press UP";
+            "\nUpgrade efficiency costs: " + std::to_string(info.costEfficiency) +
+            "\nTo upgrade strength press UP" + 
+            "\nTo upgrade efficiency press DOWN" +
+            "\nIf your points're below 0, you lose";
             if (info.isDebug)
-                out += "\nFrameCount: " + std::to_string(info.frameCount);
+                out += "\nFrameCount: " + std::to_string(info.frameCount) +
+                "\nTarget " + std::to_string(info.mouseOnTarget) +
+                "\nx " + std::to_string(info.mousePosView.x) + 
+                " y " + std::to_string(info.mousePosView.y);
             texts[i]->setString(out);
             break;
         }
@@ -53,7 +62,9 @@ void Text::update(const GameInfo &info)
                     texts.erase(texts.begin() + i);
                 }
                 else
+                {
                     texts[i]->setCharacterSize(texts[i]->getCharacterSize() * 0.95f);
+                }
             }
             break;
         }
@@ -67,7 +78,11 @@ void Text::update(const GameInfo &info)
                     texts.erase(texts.begin() + i);
                 }
                 else
+                {
                     texts[i]->setCharacterSize(texts[i]->getCharacterSize() * 0.95f);
+                    sf::FloatRect bounds = texts[i]->getLocalBounds();
+                    texts[i]->move(bounds.width / 32.f, bounds.height / 32.f);
+                }
             }
         }
         default:
